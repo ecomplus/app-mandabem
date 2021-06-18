@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.7](https://github.com/ecomplus/application-starter/compare/v1.0.6...v1.0.7) (2021-06-18)
+
+
+### Bug Fixes
+
+* **deps:** update @ecomplus/application-sdk to v1.15.4 and firebase-admin v9 ([1b3a6ef](https://github.com/ecomplus/application-starter/commit/1b3a6ef2e6753fac6e990d810c58c1dbe679761e))
+
 ### [1.0.6](https://github.com/ecomplus/application-starter/compare/v1.0.5...v1.0.6) (2020-11-05)
 
 
