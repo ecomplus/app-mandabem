@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/ecomplus/application-starter/compare/v1.0.7...v1.1.0) (2021-08-03)
+
+
+### Features
+
+* **admin-settings:** add optional config for enabled services and disabled by zip range [[#10](https://github.com/ecomplus/application-starter/issues/10)] ([3ba13d6](https://github.com/ecomplus/application-starter/commit/3ba13d6fe617429b08c5c4f614acbfe2c8aa5c8e))
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#46](https://github.com/ecomplus/application-starter/issues/46)) ([9382330](https://github.com/ecomplus/application-starter/commit/938233019d7ec90c1656020b7ad4d2ed80d8c1e4))
+
 ### [1.0.7](https://github.com/ecomplus/application-starter/compare/v1.0.6...v1.0.7) (2021-06-18)
 
 
