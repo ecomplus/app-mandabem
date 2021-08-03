@@ -30,7 +30,8 @@ exports.post = ({ appSdk }, req, res) => {
   }
 
   const destinationZip = params.to ? params.to.zip.replace(/\D/g, '') : ''
-  const originZip = params.from ? params.from.zip.replace(/\D/g, '')
+  const originZip = params.from
+    ? params.from.zip.replace(/\D/g, '')
     : appData.zip ? appData.zip.replace(/\D/g, '') : ''
 
   const checkZipCode = rule => {
@@ -76,9 +77,16 @@ exports.post = ({ appSdk }, req, res) => {
 
   if (params.items) {
     // optinal predefined or configured service codes
-    const serviceNames = Array.isArray(appData.services) && appData.services[0]
+    let serviceNames = Array.isArray(appData.services) && appData.services[0]
       ? appData.services.map(service => service.service_name)
       : ['PAC', 'SEDEX']
+    if (Array.isArray(appData.disable_services) && appData.disable_services.length) {
+      serviceNames = serviceNames.filter(serviceName => {
+        return !appData.disable_services.find(rule => {
+          return rule && rule.service_name === serviceName && checkZipCode(rule)
+        })
+      })
+    }
 
     // optional params to Correios services
     let secureValue = 0

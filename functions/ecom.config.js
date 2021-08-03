@@ -188,7 +188,7 @@ const app = {
                 'SEDEX',
                 'PACMINI'
               ],
-              default: 'subtotal',
+              default: 'PAC',
               title: 'Serviço dos Correios'
             },
             zip_range: {
@@ -242,6 +242,88 @@ const app = {
                   maximum: 99999999,
                   title: 'Valor do desconto',
                   description: 'Valor percentual/fixo do desconto ou acréscimo (negativo)'
+                }
+              }
+            }
+          }
+        }
+      },
+      hide: false
+    },
+    services: {
+      schema: {
+        title: 'Serviços de entrega via Mandaê',
+        description: 'Configuração opcional de serviços, por padrão serão utilizados PAC e SEDEX',
+        type: 'array',
+        maxItems: 6,
+        items: {
+          title: 'Opção de serviço de entrega',
+          type: 'object',
+          required: [
+            'service_name'
+          ],
+          properties: {
+            label: {
+              type: 'string',
+              maxLength: 50,
+              title: 'Rótulo',
+              description: 'Nome do serviço exibido aos clientes'
+            },
+            service_name: {
+              type: 'string',
+              enum: [
+                'PAC',
+                'SEDEX',
+                'PACMINI'
+              ],
+              default: 'PAC',
+              title: 'Serviço dos Correios'
+            }
+          }
+        }
+      },
+      hide: false
+    },
+    disable_services: {
+      schema: {
+        title: 'Desabilitar serviços',
+        description: 'Desabilitar tipos de serviço por CEP',
+        type: 'array',
+        maxItems: 300,
+        items: {
+          title: 'Serviço a desabilitar',
+          type: 'object',
+          minProperties: 1,
+          properties: {
+            service_name: {
+              type: 'string',
+              enum: [
+                'PAC',
+                'SEDEX',
+                'PACMINI'
+              ],
+              default: 'PAC',
+              title: 'Serviço dos Correios'
+            },
+            zip_range: {
+              title: 'Faixa de CEP',
+              type: 'object',
+              required: [
+                'min',
+                'max'
+              ],
+              properties: {
+                min: {
+                  type: 'integer',
+                  minimum: 10000,
+                  maximum: 999999999,
+                  title: 'CEP inicial'
+                },
+                max: {
+                  type: 'integer',
+                  minimum: 10000,
+                  maximum: 999999999,
+                  title: 'CEP final'
                 }
               }
             }
