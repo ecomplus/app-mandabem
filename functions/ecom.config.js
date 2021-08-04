@@ -252,7 +252,7 @@ const app = {
     },
     services: {
       schema: {
-        title: 'Serviços de entrega via Mandaê',
+        title: 'Serviços de entrega via Mandabem',
         description: 'Configuração opcional de serviços, por padrão serão utilizados PAC e SEDEX',
         type: 'array',
         maxItems: 6,
