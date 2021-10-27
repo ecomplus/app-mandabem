@@ -186,7 +186,7 @@ exports.post = ({ appSdk }, req, res) => {
         'https://mandabem.com.br/ws/valor_envio',
         qs.stringify({ ...mandabemParams, servico }),
         {
-          timeout: (params.is_checkout_confirmation ? 8000 : 5000) / serviceNames.length,
+          timeout: (params.is_checkout_confirmation ? 8000 : 4500),
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }
