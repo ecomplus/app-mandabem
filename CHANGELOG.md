@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/ecomplus/application-starter/compare/v1.1.1...v1.1.2) (2021-10-27)
+
+
+### Bug Fixes
+
+* **calculate-shipping:** fix mandabem ws requests timeouts (concurrent requests) ([0e85756](https://github.com/ecomplus/application-starter/commit/0e85756a9b905437be30d7cb665c6270daf568c3))
+
 ### [1.1.1](https://github.com/ecomplus/application-starter/compare/v1.1.0...v1.1.1) (2021-10-26)
 
 
