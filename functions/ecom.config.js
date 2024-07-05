@@ -392,7 +392,7 @@ const app = {
               type: 'string',
               maxLength: 255,
               title: 'Documento da filial',
-              description: 'CNPJ da filial associado à sua conta Kangu'
+              description: 'CNPJ da filial associado à sua conta Mandabem'
             },
             zip: {
               type: 'string',
