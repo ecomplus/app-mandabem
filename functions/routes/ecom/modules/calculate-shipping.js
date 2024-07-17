@@ -30,6 +30,7 @@ exports.post = ({ appSdk }, req, res) => {
   }
 
   let originZip, warehouseCode, docNumber
+    const destinationZip = params.to ? params.to.zip.replace(/\D/g, '') : ''
   let postingDeadline = appData.posting_deadline
   let isWareHouse = false
   if (params.from) {
