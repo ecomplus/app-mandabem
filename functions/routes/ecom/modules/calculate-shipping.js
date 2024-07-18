@@ -30,7 +30,15 @@ exports.post = ({ appSdk }, req, res) => {
   }
 
   let originZip, warehouseCode, docNumber
-    const destinationZip = params.to ? params.to.zip.replace(/\D/g, '') : ''
+  const destinationZip = params.to ? params.to.zip.replace(/\D/g, '') : ''
+  const checkZipCode = rule => {
+    // validate rule zip range
+    if (destinationZip && rule.zip_range) {
+      const { min, max } = rule.zip_range
+      return Boolean((!min || destinationZip >= min) && (!max || destinationZip <= max))
+    }
+    return true
+  }
   let postingDeadline = appData.posting_deadline
   let isWareHouse = false
   if (params.from) {
@@ -67,15 +75,6 @@ exports.post = ({ appSdk }, req, res) => {
     originZip = appData.zip
   }
   originZip = typeof originZip === 'string' ? originZip.replace(/\D/g, '') : ''
-
-  const checkZipCode = rule => {
-    // validate rule zip range
-    if (destinationZip && rule.zip_range) {
-      const { min, max } = rule.zip_range
-      return Boolean((!min || destinationZip >= min) && (!max || destinationZip <= max))
-    }
-    return true
-  }
 
   // search for configured free shipping rule
   if (Array.isArray(appData.shipping_rules)) {
