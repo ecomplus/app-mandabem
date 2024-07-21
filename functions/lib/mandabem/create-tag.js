@@ -86,7 +86,7 @@ module.exports = (apiId, apiKey, order, refId) => {
                   auth
                 ))
               }
-              return response
+              return data
             }).catch(console.error))
         }
       }
