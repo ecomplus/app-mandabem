@@ -8,6 +8,7 @@ const ECHO_SUCCESS = 'SUCCESS'
 const ECHO_SKIP = 'SKIP'
 const ECHO_API_ERROR = 'STORE_API_ERR'
 
+
 exports.post = ({ appSdk }, req, res) => {
   // receiving notification from Store API
   const { storeId } = req
@@ -17,6 +18,35 @@ exports.post = ({ appSdk }, req, res) => {
    * Ref.: https://developers.e-com.plus/docs/api/#/store/triggers/
    */
   const trigger = req.body
+
+  const parseStatus = (status) => {
+    if (status) {
+      switch (status.toLowerCase()) {
+        case 'pago':
+          return 'paid'
+          break;
+        case 'em produção':
+          return 'in_production'
+          break;
+        case 'em separação':
+          return 'in_separation'
+          break;
+        case 'pronto para envio':
+          return 'ready_for_shipping'
+          break;
+        case 'nf emitida':
+          return 'invoice_issued'
+          break;
+        case 'enviado':
+          return 'shipped'
+          break;
+        default: 
+          return 'ready_for_shipping'
+          break;
+      }
+    }
+    return 'ready_for_shipping'
+  }
 
   // get app configured options
   let auth, mandaBemId, mandaBemKey
@@ -29,13 +59,14 @@ exports.post = ({ appSdk }, req, res) => {
     .then(appData => {
       mandaBemId = appData.mandabem_id
       mandaBemKey = appData.mandabem_token
+      const sendStatus = parseStatus(send_tag_status)
       if (mandaBemId && mandaBemKey && trigger.resource === 'orders' && !appData.disable_auto_tag) {
         // handle order fulfillment status changes
         const order = trigger.body
         if (
           order &&
-          order.fulfillment_status &&
-          order.fulfillment_status.current === 'ready_for_shipping'
+          (order.fulfillment_status || order.financial_status) &&
+          (!sendStatus && order.fulfillment_status && order.fulfillment_status.current === 'ready_for_shipping') || (sendStatus === (order.fulfillment_status && order.fulfillment_status.current)) || (sendStatus === (order.financial_status && order.financial_status.current))
         ) {
           // read full order body
           return appSdk.apiRequest(storeId, `/orders/${trigger.resource_id}.json`, 'GET', null, auth)
