@@ -67,8 +67,25 @@ module.exports = (apiId, apiKey, order, refId) => {
                   'Content-Type': 'application/x-www-form-urlencoded'
                 }
               }
-            ).then(response => {
-              console.log('> Manda Bem create tag', JSON.stringify(response.data))
+            ).then(({data}) => {
+              console.log('> Manda Bem create tag', JSON.stringify(data))
+              if (data.resultado && data.resultado.sucesso == 'true') {
+                const custom_fields = shippingLine.custom_fields || []
+                custom_fields.push({
+                  field: 'rastreio',
+                  value: data.resultado.envio_id
+                })
+                  
+                requests.push(appSdk.apiRequest(
+                  storeId,
+                  `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
+                  'PATCH',
+                  { 
+                    custom_fields 
+                   },
+                  auth
+                ))
+              }
               return response
             }).catch(console.error))
         }
