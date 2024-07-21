@@ -370,6 +370,22 @@ const app = {
       },
       hide: false
     },
+    send_tag_status: {
+      schema: {
+        type: 'string',
+        title: 'Status para envio de etiqueta',
+        enum: [
+          'Pago',
+          'Em produção',
+          'Em separação',
+          'Pronto para envio',
+          'NF emitida',
+          'Enviado'
+        ],
+        default: 'Pronto para envio'
+      },
+      hide: false
+    },
     warehouses: {
       schema: {
         title: 'Armazéns (multi CD)',
@@ -548,6 +564,11 @@ procedures.push({
     {
       resource: 'orders',
       field: 'fulfillment_status',
+    },
+
+    {
+      resource: 'orders',
+      field: 'financial_status',
     },
 
     /*
