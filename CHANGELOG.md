@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/ecomplus/application-starter/compare/v1.1.2...v1.2.0) (2024-07-24)
+
+
+### Features
+
+* **ecom-config:** add config app data to posting deadline ([79aa04f](https://github.com/ecomplus/application-starter/commit/79aa04f78499846f99397695d0a048a9f9ef9a44))
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#68](https://github.com/ecomplus/application-starter/issues/68)) ([0d614ae](https://github.com/ecomplus/application-starter/commit/0d614ae10440dbdabc9930f60989256422cc2b7f))
+* **deps:** update dependency axios to ^0.28.0 [security] ([9a1d86c](https://github.com/ecomplus/application-starter/commit/9a1d86ce53a1e8b4a4922cc598a662518827d4a9))
+* **deps:** update dependency express to ^4.18.3 ([2c5d93c](https://github.com/ecomplus/application-starter/commit/2c5d93cd74fd6cdff6814af2808bcfe895ab0281))
+* **deps:** update dependency express to v4.19.2 [security] ([42e98c2](https://github.com/ecomplus/application-starter/commit/42e98c24df63a7cfa23888064ea4e1bde15ab56d))
+* fix updating shipping lines on tag created (webhooks) ([0ecaa86](https://github.com/ecomplus/application-starter/commit/0ecaa861aceb70ecdbda059b80177b8f89a7236d))
+* properly handling warehouses (multi cd) optionally with multiple mandabem accounts ([c4e144f](https://github.com/ecomplus/application-starter/commit/c4e144ffd626677c90889c046b863c32e054c454))
+
 ### [1.1.2](https://github.com/ecomplus/application-starter/compare/v1.1.1...v1.1.2) (2021-10-27)
 
 
