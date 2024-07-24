@@ -1,16 +1,15 @@
 const axios = require('axios')
 const qs = require('querystring')
 
-module.exports = (apiId, apiKey, order, refId) => {
+module.exports = ({ appSdk, storeId, auth }, { mandaBemId, mandaBemKey, order }) => {
   // create new shipping tag with Manda Bem WS
   // https://mandabem.com.br/documentacao
   const data = {
-    plataforma_id: apiId,
-    plataforma_chave: apiKey,
-    ref_id: refId || order.number || order._id
+    plataforma_id: mandaBemId,
+    plataforma_chave: mandaBemKey,
+    ref_id: order.number || order._id
   }
 
-  // start parsing order body
   if (order.items) {
     data.produtos = order.items.map(item => ({
       nome: item.name,
@@ -26,14 +25,12 @@ module.exports = (apiId, apiKey, order, refId) => {
   const requests = []
   if (order.shipping_lines) {
     order.shipping_lines.forEach(shippingLine => {
-      if (shippingLine.app) {
-        // check for valid Correios service
+      if (shippingLine.app?.carrier?.includes('Manda Bem')) {
         data.forma_envio = shippingLine.app.service_name
         switch (data.forma_envio) {
           case 'PAC':
           case 'SEDEX':
           case 'PACMINI':
-            // parse addresses and package info from shipping line object
             data.destinatario = shippingLine.to.name
             data.cep = shippingLine.to.zip.replace(/\D/g, '')
             data.logradouro = shippingLine.to.street
@@ -46,8 +43,10 @@ module.exports = (apiId, apiKey, order, refId) => {
             data.estado = shippingLine.to.province_code
             if (shippingLine.package && shippingLine.package.weight) {
               const { value, unit } = shippingLine.package.weight
-              data.peso = !unit || unit === 'kg' ? value
-                : unit === 'g' ? value * 1000
+              data.peso = !unit || unit === 'kg'
+                ? value
+                : unit === 'g'
+                  ? value * 1000
                   : value * 1000000
               data.altura = 2
               data.largura = 11
@@ -57,8 +56,6 @@ module.exports = (apiId, apiKey, order, refId) => {
               data.valor_seguro = shippingLine.declared_value
             }
             data.cep_origem = shippingLine.from.zip.replace(/\D/g, '')
-            console.log(`> Create tag for #${order._id}: ` + JSON.stringify(data))
-            // send POST to generate Manda Bem tag
             requests.push(axios.post(
               'https://mandabem.com.br/ws/gerar_envio',
               qs.stringify(data),
@@ -67,24 +64,20 @@ module.exports = (apiId, apiKey, order, refId) => {
                   'Content-Type': 'application/x-www-form-urlencoded'
                 }
               }
-            ).then(({data}) => {
-              console.log('> Manda Bem create tag', JSON.stringify(data))
-              if (data.resultado && data.resultado.sucesso == 'true') {
-                const custom_fields = shippingLine.custom_fields || []
-                custom_fields.push({
+            ).then(({ data }) => {
+              if (String(data?.resultado?.sucesso) === 'true') {
+                const customFields = shippingLine.custom_fields || []
+                customFields.push({
                   field: 'rastreio',
                   value: data.resultado.envio_id
                 })
-                  
-                requests.push(appSdk.apiRequest(
+                return appSdk.apiRequest(
                   storeId,
                   `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
                   'PATCH',
-                  { 
-                    custom_fields 
-                   },
+                  { custom_fields: customFields },
                   auth
-                ))
+                )
               }
               return data
             }).catch(console.error))
