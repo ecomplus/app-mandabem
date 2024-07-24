@@ -17,7 +17,9 @@ exports.post = ({ appSdk }, req, res) => {
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
 
-  if (!appData.mandabem_id || !appData.mandabem_token) {
+  let mandabemId = appData.mandabem_id
+  let mandabemToken = appData.mandabem_token
+  if (!mandabemId || !mandabemToken) {
     // must have configured Manda Bem ID and key
     return res.status(409).send({
       error: 'CALCULATE_AUTH_ERR',
@@ -29,7 +31,6 @@ exports.post = ({ appSdk }, req, res) => {
     response.free_shipping_from_value = appData.free_shipping_from_value
   }
 
-  let originZip, warehouseCode, docNumber
   const destinationZip = params.to ? params.to.zip.replace(/\D/g, '') : ''
   const checkZipCode = rule => {
     // validate rule zip range
@@ -39,40 +40,30 @@ exports.post = ({ appSdk }, req, res) => {
     }
     return true
   }
+
+  let originZip, warehouseCode
   let postingDeadline = appData.posting_deadline
-  let from = appData.from || {}
-  let isWareHouse = false
   if (params.from) {
     originZip = params.from.zip
   } else if (Array.isArray(appData.warehouses) && appData.warehouses.length) {
     for (let i = 0; i < appData.warehouses.length; i++) {
       const warehouse = appData.warehouses[i]
-      if (warehouse && warehouse.zip && checkZipCode(warehouse)) {
+      if (warehouse?.zip && checkZipCode(warehouse)) {
         const { code } = warehouse
-        if (!code) {
-          continue
-        }
-        if (
-          params.items &&
-          params.items.find(({ quantity, inventory }) => inventory && Object.keys(inventory).length && !(inventory[code] >= quantity))
-        ) {
-          // item not available on current warehouse
-          continue
+        if (!code) continue
+        if (params.items) {
+          const itemNotOnWarehouse = params.items.find(({ quantity, inventory }) => {
+            return inventory && Object.keys(inventory).length && !(inventory[code] >= quantity)
+          })
+          if (itemNotOnWarehouse) continue
         }
         originZip = warehouse.zip
-        isWareHouse = true
-        if (warehouse.posting_deadline) {
+        if (warehouse.posting_deadline?.days) {
           postingDeadline = warehouse.posting_deadline
         }
-        if (warehouse.doc) {
-          docNumber = warehouse.doc
-        }
-        if (warehouse && warehouse.street) {
-          ;['zip', 'street', 'number', 'complement', 'borough', 'city', 'province_code'].forEach(prop => {
-            if (warehouse[prop]) {
-              from[prop] = warehouse[prop]
-            }
-          })
+        if (warehouse.mandabem_id && warehouse.mandabem_token) {
+          mandabemId = warehouse.mandabem_id
+          mandabemToken = warehouse.mandabem_token
         }
         warehouseCode = code
       }
@@ -208,8 +199,8 @@ exports.post = ({ appSdk }, req, res) => {
 
     // https://mandabem.com.br/documentacao
     const mandabemParams = {
-      plataforma_id: appData.mandabem_id,
-      plataforma_chave: appData.mandabem_token,
+      plataforma_id: mandabemId,
+      plataforma_chave: mandabemToken,
       cep_origem: originZip,
       cep_destino: destinationZip,
       valor_seguro: secureValue.toFixed(2),
@@ -254,7 +245,6 @@ exports.post = ({ appSdk }, req, res) => {
             const shippingLine = {
               from: {
                 ...params.from,
-                ...from,
                 zip: originZip
               },
               to: params.to,
@@ -276,6 +266,7 @@ exports.post = ({ appSdk }, req, res) => {
                   unit: 'kg'
                 }
               },
+              warehouse_code: warehouseCode,
               flags: ['mandabem-ws']
             }
 
@@ -341,9 +332,6 @@ exports.post = ({ appSdk }, req, res) => {
             response.shipping_services.push({
               label,
               carrier: 'Correios (Manda Bem)',
-              carrier_doc_number: isWareHouse && docNumber
-                ? docNumber
-                : '34028316000103',
               service_name: servico,
               shipping_line: shippingLine
             })

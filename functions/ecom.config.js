@@ -395,7 +395,7 @@ const app = {
         items: {
           title: 'Centro de distribuição',
           type: 'object',
-          required: ['zip'],
+          required: ['code', 'zip'],
           additionalProperties: false,
           properties: {
             code: {
@@ -404,11 +404,17 @@ const app = {
               pattern: '^[A-Za-z0-9-_]{2,30}$',
               title: 'Código do CD'
             },
-            doc: {
+            mandabem_id: {
               type: 'string',
               maxLength: 255,
-              title: 'Documento da filial',
-              description: 'CNPJ da filial associado à sua conta Kangu'
+              title: 'Manda Bem API ID',
+              description: 'API ID específico do CD, se houver'
+            },
+            mandabem_token: {
+              type: 'string',
+              maxLength: 255,
+              title: 'Manda Bem API Token',
+              description: 'API Token específico do CD, se houver'
             },
             zip: {
               type: 'string',
@@ -416,65 +422,6 @@ const app = {
               pattern: '^[0-9]{5}-?[0-9]{3}$',
               title: 'CEP de origem',
               description: 'Código postal do remetente para cálculo do frete'
-            },
-            street: {
-              type: 'string',
-              maxLength: 200,
-              title: 'Digite a rua'
-            },
-            number: {
-              type: 'integer',
-              min: 1,
-              max: 9999999,
-              title: 'Digite o número da residência'
-            },
-            complement: {
-              type: 'string',
-              maxLength: 100,
-              title: 'Complemento'
-            },
-            borough: {
-              type: 'string',
-              maxLength: 100,
-              title: 'Bairro'
-            },
-            city: {
-              type: 'string',
-              maxLength: 100,
-              title: 'Cidade'
-            },
-            province_code: {
-              type: 'string',
-              title: 'Sigla do Estado',
-              enum: [
-                'AC',
-                'AL',
-                'AP',
-                'AM',
-                'BA',
-                'CE',
-                'DF',
-                'ES',
-                'GO',
-                'MA',
-                'MT',
-                'MS',
-                'MG',
-                'PA',
-                'PB',
-                'PR',
-                'PE',
-                'PI',
-                'RR',
-                'RO',
-                'RJ',
-                'RS',
-                'RN',
-                'SC',
-                'SP',
-                'SE',
-                'TO'
-              ]
             },
             posting_deadline: {
               title: 'Prazo de envio do CD',

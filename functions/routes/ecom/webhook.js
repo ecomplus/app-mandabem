@@ -39,7 +39,7 @@ exports.post = ({ appSdk }, req, res) => {
     return
   }
 
-  let auth, mandaBemId, mandaBemKey
+  let auth, mandaBemId, mandaBemKey, warehouses
   appSdk.getAuth(storeId)
     .then(_auth => {
       auth = _auth
@@ -49,6 +49,7 @@ exports.post = ({ appSdk }, req, res) => {
     .then(appData => {
       mandaBemId = appData.mandabem_id
       mandaBemKey = appData.mandabem_token
+      warehouses = appData.warehouses || []
       const sendStatus = parseStatus(appData.send_tag_status)
       if (mandaBemId && mandaBemKey && !appData.disable_auto_tag) {
         const order = trigger.body
@@ -68,7 +69,12 @@ exports.post = ({ appSdk }, req, res) => {
     .then(({ response }) => {
       const order = response.data
       console.log(`Shipping tag for #${storeId} ${order._id}`)
-      return createMandaBemTag({ appSdk, storeId, auth }, { mandaBemId, mandaBemKey, order })
+      return createMandaBemTag({ appSdk, storeId, auth }, {
+        mandaBemId,
+        mandaBemKey,
+        warehouses,
+        order
+      })
     })
 
     .then(() => {

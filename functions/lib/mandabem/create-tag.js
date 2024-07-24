@@ -1,17 +1,21 @@
 const axios = require('axios')
 const qs = require('querystring')
 
-module.exports = ({ appSdk, storeId, auth }, { mandaBemId, mandaBemKey, order }) => {
+module.exports = ({ appSdk, storeId, auth }, {
+  mandaBemId,
+  mandaBemKey,
+  warehouses,
+  order
+}) => {
   // create new shipping tag with Manda Bem WS
   // https://mandabem.com.br/documentacao
-  const data = {
+  const _data = {
     plataforma_id: mandaBemId,
     plataforma_chave: mandaBemKey,
     ref_id: order.number || order._id
   }
-
   if (order.items) {
-    data.produtos = order.items.map(item => ({
+    _data.produtos = order.items.map(item => ({
       nome: item.name,
       quantidade: item.quantity,
       preco: item.final_price || item.price
@@ -19,13 +23,22 @@ module.exports = ({ appSdk, storeId, auth }, { mandaBemId, mandaBemKey, order })
   }
   const buyer = order.buyers && order.buyers[0]
   if (buyer && buyer.registry_type === 'p' && buyer.doc_number) {
-    data.cpf_destinatario = buyer.doc_number.replace(/\D/g, '')
+    _data.cpf_destinatario = buyer.doc_number.replace(/\D/g, '')
   }
 
   const requests = []
   if (order.shipping_lines) {
     order.shipping_lines.forEach(shippingLine => {
       if (shippingLine.app?.carrier?.includes('Manda Bem')) {
+        const data = { ..._data }
+        const warehouseCode = shippingLine.warehouse_code
+        if (warehouseCode) {
+          const warehouse = warehouses?.find(({ code }) => code === warehouseCode)
+          if (warehouse?.mandabem_id && warehouse?.mandabem_token) {
+            data.plataforma_id = warehouse.mandabem_id
+            data.plataforma_chave = warehouse.mandabem_token
+          }
+        }
         data.forma_envio = shippingLine.app.service_name
         switch (data.forma_envio) {
           case 'PAC':
