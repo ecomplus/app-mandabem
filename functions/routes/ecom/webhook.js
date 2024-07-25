@@ -54,7 +54,9 @@ exports.post = ({ appSdk }, req, res) => {
       mandaBemKey = appData.mandabem_token
       warehouses = appData.warehouses || []
       const sendStatus = parseStatus(appData.send_tag_status)
-      console.log('>> Webhook  <<', sendStatus)
+      console.log('>> Webhook  <<', sendStatus, mandaBemId && mandaBemKey && !appData.disable_auto_tag, order &&
+        (order.fulfillment_status?.current === sendStatus ||
+          order.financial_status?.current === sendStatus))
       if (mandaBemId && mandaBemKey && !appData.disable_auto_tag) {
         const order = trigger.body
         if (
