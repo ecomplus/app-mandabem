@@ -65,7 +65,7 @@ module.exports = ({ appSdk, storeId, auth }, {
               data.largura = 11
               data.comprimento = 16
             }
-            if (shippingLine.declared_value) {
+            if (shippingLine.declared_value >= 26) {
               data.valor_seguro = shippingLine.declared_value
             }
             data.cep_origem = shippingLine.from.zip.replace(/\D/g, '')
