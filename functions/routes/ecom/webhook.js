@@ -39,7 +39,8 @@ exports.post = ({ appSdk }, req, res) => {
     return
   }
 
-
+  console.log('>> Webhook before auth  << #', storeId, JSON.stringify(trigger.body))
+      
   let auth, mandaBemId, mandaBemKey, warehouses
   appSdk.getAuth(storeId)
     .then(_auth => {
