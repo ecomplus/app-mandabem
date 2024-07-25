@@ -45,6 +45,7 @@ exports.post = ({ appSdk }, req, res) => {
   appSdk.getAuth(storeId)
     .then(_auth => {
       auth = _auth
+      console.log('auth', 'already logged', storeId)
       return getAppData({ appSdk, storeId, auth })
     })
 
@@ -86,6 +87,7 @@ exports.post = ({ appSdk }, req, res) => {
     })
 
     .catch(err => {
+      console.log('didnt workout any point', err)
       if (err.name === SKIP_TRIGGER_NAME) {
         // trigger ignored by app configuration
         res.send(ECHO_SKIP)
