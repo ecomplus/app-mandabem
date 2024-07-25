@@ -39,6 +39,7 @@ exports.post = ({ appSdk }, req, res) => {
     return
   }
 
+
   let auth, mandaBemId, mandaBemKey, warehouses
   appSdk.getAuth(storeId)
     .then(_auth => {
@@ -51,6 +52,7 @@ exports.post = ({ appSdk }, req, res) => {
       mandaBemKey = appData.mandabem_token
       warehouses = appData.warehouses || []
       const sendStatus = parseStatus(appData.send_tag_status)
+      console.log('>> Webhook  <<', sendStatus, order.fulfillment_status?.current, order.financial_status?.current)
       if (mandaBemId && mandaBemKey && !appData.disable_auto_tag) {
         const order = trigger.body
         if (
