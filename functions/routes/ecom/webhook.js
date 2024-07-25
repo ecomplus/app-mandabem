@@ -38,14 +38,11 @@ exports.post = ({ appSdk }, req, res) => {
     res.send(ECHO_SKIP)
     return
   }
-
-  console.log('>> Webhook before auth  << #', storeId)
       
   let auth, mandaBemId, mandaBemKey, warehouses
   appSdk.getAuth(storeId)
     .then(_auth => {
       auth = _auth
-      console.log('auth', 'already logged', storeId)
       return getAppData({ appSdk, storeId, auth })
     })
 
@@ -86,7 +83,7 @@ exports.post = ({ appSdk }, req, res) => {
     })
 
     .catch(err => {
-      console.log('didnt workout any point', err)
+      console.log('didnt workout at any point', err)
       if (err.name === SKIP_TRIGGER_NAME) {
         // trigger ignored by app configuration
         res.send(ECHO_SKIP)
