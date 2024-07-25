@@ -78,6 +78,7 @@ module.exports = ({ appSdk, storeId, auth }, {
                 }
               }
             ).then(({ data }) => {
+              console.log('Tag created with success', order._id, JSON.stringify(data))
               if (String(data?.resultado?.sucesso) === 'true') {
                 const customFields = shippingLine.custom_fields || []
                 customFields.push({
