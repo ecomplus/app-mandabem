@@ -6,6 +6,7 @@ const parseMandabemStatus = (status) => {
   if (/entregue/i.test(status)) return 'delivered'
   if (/encaminhado/i.test(status)) return 'shipped'
   if (/enviado/i.test(status)) return 'shipped'
+  if (/postagem/i.test(status)) return 'ready_for_shipping'
   return null
 }
 
@@ -40,10 +41,10 @@ module.exports = async (
     })
     return
   }
+  const shippingLine = order.shipping_lines?.find(({ flags }) => {
+    return flags?.find((flag) => flag.startsWith('mandabem-'))
+  })
   if (status !== order.fulfillment_status?.current) {
-    const shippingLine = order.shipping_lines?.find(({ flags }) => {
-      return flags?.find((flag) => flag.startsWith('mandabem-'))
-    })
     await appSdk.apiRequest(
       storeId,
       `/orders/${order._id}/fulfillments.json`,
@@ -57,5 +58,27 @@ module.exports = async (
       auth
     )
     logger.info(`#${storeId} ${number} updated to ${status}`)
+  }
+  const trackingId = trackingResult.resultado.dados.etiqueta
+  if (trackingId) {
+    const trackingCodes = shippingLine.tracking_codes || []
+    const savedTrackingCode = trackingCodes.find(({ code }) => {
+      return code === trackingId
+    })
+    if (!savedTrackingCode) {
+      trackingCodes.push({
+        tag: 'mandabem',
+        code: trackingId,
+        link: 'https://rastreamento.correios.com.br/app/index.php'
+      })
+      await appSdk.apiRequest(
+        storeId,
+        `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
+        'PATCH',
+        { tracking_codes: trackingCodes },
+        auth
+      )
+      logger.info(`#${storeId} ${number} tracking code ${trackingId}`)
+    }
   }
 }
