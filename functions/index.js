@@ -140,3 +140,9 @@ exports.updateTokens = functions.pubsub.schedule(cron).onRun(() => {
   })
 })
 console.log(`-- Sheduled update E-Com Plus tokens '${cron}'`)
+
+const cronCheckTracking = '*/20 * * * *'
+const checkOrdersTracking = require('./lib/mandabem/check-orders-tracking')
+exports.checkOrdersTracking = functions.runWith({ timeoutSeconds: 540 })
+  .pubsub.schedule(cronCheckTracking).onRun(checkOrdersTracking)
+console.log(`-- Sheduled check tracking from MandaBem API ${cronCheckTracking}`)
