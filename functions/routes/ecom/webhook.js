@@ -38,7 +38,7 @@ exports.post = ({ appSdk }, req, res) => {
     res.send(ECHO_SKIP)
     return
   }
-      
+
   let auth, mandaBemId, mandaBemKey, warehouses
   appSdk.getAuth(storeId)
     .then(_auth => {

@@ -80,16 +80,17 @@ module.exports = ({ appSdk, storeId, auth }, {
             ).then(({ data }) => {
               console.log('Tag created with success', order._id)
               if (String(data?.resultado?.sucesso) === 'true') {
-                const customFields = shippingLine.custom_fields || []
-                customFields.push({
-                  field: 'rastreio',
-                  value: String(data.resultado.envio_id)
+                const trackingId = String(data.resultado.envio_id)
+                const trackingCodes = shippingLine.tracking_codes || []
+                trackingCodes.push({
+                  code: trackingId,
+                  tag: 'mandabem'
                 })
                 return appSdk.apiRequest(
                   storeId,
                   `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
                   'PATCH',
-                  { custom_fields: customFields },
+                  { tracking_codes: trackingCodes },
                   auth
                 )
               }
