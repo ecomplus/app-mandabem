@@ -17,7 +17,7 @@ module.exports = async (
   const { number } = order
   logger.info(`Tracking #${storeId} ${number}`)
   const { data } = await axios.post(
-    'https://mandabem.com.br/ws/gerar_envio',
+    'https://mandabem.com.br/ws/envio',
     qs.stringify({
       ref_id: number,
       plataforma_id: mandaBemId,
