@@ -60,8 +60,10 @@ module.exports = async (
     logger.info(`#${storeId} ${number} updated to ${status}`)
   }
   const trackingId = trackingResult.resultado.dados.etiqueta
-  if (trackingId) {
-    const trackingCodes = shippingLine.tracking_codes || []
+  if (trackingId && !trackingId.includes(' ')) {
+    const trackingCodes = shippingLine.tracking_codes?.filter(({ code }) => {
+      return code.toLowerCase() !== 'aguardando postagem'
+    }) || []
     const savedTrackingCode = trackingCodes.find(({ code }) => {
       return code === trackingId
     })
