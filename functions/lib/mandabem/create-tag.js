@@ -1,3 +1,4 @@
+const { logger } = require('firebase-functions')
 const axios = require('axios')
 const qs = require('querystring')
 
@@ -78,8 +79,8 @@ module.exports = ({ appSdk, storeId, auth }, {
                 }
               }
             ).then(({ data }) => {
-              console.log('Tag created with success', order._id)
               if (String(data?.resultado?.sucesso) === 'true') {
+                logger.info(`Tag created with success ${order._id}`)
                 const tagId = String(data.resultado.envio_id)
                 const customFields = shippingLine.custom_fields || []
                 customFields.push({
@@ -94,7 +95,11 @@ module.exports = ({ appSdk, storeId, auth }, {
                   auth
                 )
               }
-              return data
+              logger.info(`Unexpected response for ${order._id} tag`, {
+                order,
+                data
+              })
+              return null
             }).catch(console.error))
         }
       }

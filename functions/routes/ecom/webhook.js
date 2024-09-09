@@ -1,3 +1,4 @@
+const { logger } = require('firebase-functions')
 const getAppData = require('./../../lib/store-api/get-app-data')
 const createMandaBemTag = require('./../../lib/mandabem/create-tag')
 
@@ -23,6 +24,19 @@ const parseStatus = (status) => {
     default:
       return 'ready_for_shipping'
   }
+}
+
+const getShippingCustomField = (order, field) => {
+  if (order.shipping_lines) {
+    for (let i = 0; i < order.shipping_lines.length; i++) {
+      const shippingLineFields = order.shipping_lines[i].custom_fields
+      const customField = shippingLineFields?.find(custom => custom.field === field)
+      if (customField) {
+        return customField.value
+      }
+    }
+  }
+  return false
 }
 
 exports.post = ({ appSdk }, req, res) => {
@@ -68,7 +82,10 @@ exports.post = ({ appSdk }, req, res) => {
 
     .then(({ response }) => {
       const order = response.data
-      console.log(`Shipping tag for #${storeId} ${order._id}`)
+      if (getShippingCustomField(order, 'mandabem_id')) {
+        return null
+      }
+      logger.info(`Shipping tag for #${storeId} ${order._id}`)
       return createMandaBemTag({ appSdk, storeId, auth }, {
         mandaBemId,
         mandaBemKey,
@@ -83,7 +100,6 @@ exports.post = ({ appSdk }, req, res) => {
     })
 
     .catch(err => {
-      console.log('didnt workout at any point', err)
       if (err.name === SKIP_TRIGGER_NAME) {
         // trigger ignored by app configuration
         res.send(ECHO_SKIP)
