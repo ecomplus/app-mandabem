@@ -189,6 +189,10 @@ exports.post = ({ appSdk }, req, res) => {
       }
       finalWeight += (quantity * (physicalWeight > cubicWeight ? physicalWeight : cubicWeight))
     })
+    if (finalWeight > 30) {
+      res.send(response)
+      return
+    }
 
     // pre check for maximum allowed declared value
     if (secureValue < 20.5) {
