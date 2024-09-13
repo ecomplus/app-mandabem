@@ -6,7 +6,7 @@ const parseMandabemStatus = (status) => {
   if (/entregue/i.test(status)) return 'delivered'
   if (/encaminhado/i.test(status)) return 'shipped'
   if (/enviado/i.test(status)) return 'shipped'
-  if (/postagem/i.test(status)) return 'ready_for_shipping'
+  if (/postagem/i.test(status)) return ''
   return null
 }
 
@@ -34,7 +34,7 @@ module.exports = async (
     ? JSON.parse(data)
     : (data || {})
   const status = parseMandabemStatus(trackingResult?.resultado?.dados?.status)
-  if (!status) {
+  if (status === null) {
     logger.warn(`No parsed fulfillment status for #${storeId} ${number}`, {
       trackingResult,
       data
@@ -44,7 +44,7 @@ module.exports = async (
   const shippingLine = order.shipping_lines?.find(({ flags }) => {
     return flags?.find((flag) => flag.startsWith('mandabem-'))
   })
-  if (status !== order.fulfillment_status?.current) {
+  if (status && status !== order.fulfillment_status?.current) {
     await appSdk.apiRequest(
       storeId,
       `/orders/${order._id}/fulfillments.json`,
