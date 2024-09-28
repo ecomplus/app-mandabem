@@ -1,6 +1,7 @@
 const { logger } = require('firebase-functions')
 const axios = require('axios')
 const qs = require('querystring')
+const { debugAxiosError } = require('../util')
 
 module.exports = ({ appSdk, storeId, auth }, {
   mandaBemId,
@@ -65,6 +66,31 @@ module.exports = ({ appSdk, storeId, auth }, {
               data.altura = 2
               data.largura = 11
               data.comprimento = 16
+              const { dimensions } = shippingLine.package
+              if (dimensions) {
+                Object.keys(dimensions).forEach((side) => {
+                  const { unit, value } = dimensions[side]
+                  let cmValue
+                  switch (unit) {
+                    case 'm':
+                      cmValue = value * 100
+                      break
+                    case 'mm':
+                      cmValue = value / 10
+                      break
+                    default:
+                      cmValue = value
+                  }
+                  if (cmValue >= 1) {
+                    const dataField = side === 'width'
+                      ? 'largura'
+                      : side === 'height'
+                        ? 'altura'
+                        : 'comprimento'
+                    data[dataField] = cmValue
+                  }
+                })
+              }
             }
             if (shippingLine.declared_value >= 26) {
               data.valor_seguro = shippingLine.declared_value
@@ -78,29 +104,32 @@ module.exports = ({ appSdk, storeId, auth }, {
                   'Content-Type': 'application/x-www-form-urlencoded'
                 }
               }
-            ).then(({ data }) => {
-              if (String(data?.resultado?.sucesso) === 'true') {
-                logger.info(`Tag created with success ${order._id}`)
-                const tagId = String(data.resultado.envio_id)
-                const customFields = shippingLine.custom_fields || []
-                customFields.push({
-                  field: 'mandabem_id',
-                  value: tagId
+            )
+              .then(({ data }) => {
+                if (String(data?.resultado?.sucesso) === 'true') {
+                  logger.info(`Tag created with success ${order._id}`)
+                  const tagId = String(data.resultado.envio_id)
+                  const customFields = shippingLine.custom_fields || []
+                  customFields.push({
+                    field: 'mandabem_id',
+                    value: tagId
+                  })
+                  return appSdk.apiRequest(
+                    storeId,
+                    `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
+                    'PATCH',
+                    { custom_fields: customFields },
+                    auth
+                  )
+                }
+                logger.info(`Unexpected response for ${order._id} tag`, {
+                  order,
+                  data
                 })
-                return appSdk.apiRequest(
-                  storeId,
-                  `/orders/${order._id}/shipping_lines/${shippingLine._id}.json`,
-                  'PATCH',
-                  { custom_fields: customFields },
-                  auth
-                )
-              }
-              logger.info(`Unexpected response for ${order._id} tag`, {
-                order,
-                data
+                return null
               })
-              return null
-            }).catch(console.error))
+              .catch(debugAxiosError)
+            )
         }
       }
     })

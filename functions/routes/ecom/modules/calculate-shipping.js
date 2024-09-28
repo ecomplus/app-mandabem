@@ -1,5 +1,6 @@
 const axios = require('axios')
 const qs = require('querystring')
+const { getBestPackage } = require('../../../lib/util')
 
 exports.post = ({ appSdk }, req, res) => {
   /**
@@ -127,10 +128,11 @@ exports.post = ({ appSdk }, req, res) => {
     }
 
     // calculate weight and pkg value from items list
+    let pkgCm3Vol = 0
     let finalWeight = 0
     params.items.forEach(({ price, quantity, dimensions, weight }) => {
       let physicalWeight = 0
-      let cubicWeight = 1
+      let cubicWeight = 0
       if (!params.subtotal) {
         secureValue += price * quantity
       }
@@ -151,40 +153,33 @@ exports.post = ({ appSdk }, req, res) => {
 
       // sum total items dimensions to calculate cubic weight
       if (dimensions) {
-        const sumDimensions = {}
+        const cmDimensions = {}
         for (const side in dimensions) {
           const dimension = dimensions[side]
-          if (dimension && dimension.value) {
-            let dimensionValue
+          if (dimension?.value) {
             switch (dimension.unit) {
-              case 'cm':
-                dimensionValue = dimension.value
-                break
               case 'm':
-                dimensionValue = dimension.value * 100
+                cmDimensions[side] = dimension.value * 100
                 break
               case 'mm':
-                dimensionValue = dimension.value / 10
-            }
-            // add/sum current side to final dimensions object
-            if (dimensionValue) {
-              sumDimensions[side] = sumDimensions[side]
-                ? sumDimensions[side] + dimensionValue
-                : dimensionValue
+                cmDimensions[side] = dimension.value / 10
+                break
+              default:
+                cmDimensions[side] = dimension.value
             }
           }
         }
-
-        // calculate cubic weight
-        // https://suporte.boxloja.pro/article/82-correios-calculo-frete
+        let cm3 = 1
+        for (const side in cmDimensions) {
+          if (cmDimensions[side]) {
+            cm3 *= cmDimensions[side]
+          }
+        }
+        // https://ajuda.melhorenvio.com.br/pt-BR/articles/4640361-como-e-calculado-o-peso-cubico-pelos-correios
         // (C x L x A) / 6.000
-        for (const side in sumDimensions) {
-          if (sumDimensions[side]) {
-            cubicWeight *= sumDimensions[side]
-          }
-        }
-        if (cubicWeight > 1) {
-          cubicWeight /= 6000
+        if (cm3 > 1) {
+          cubicWeight = cm3 / 6000
+          pkgCm3Vol += (quantity * cm3)
         }
       }
       finalWeight += (quantity * (physicalWeight > cubicWeight ? physicalWeight : cubicWeight))
@@ -209,9 +204,10 @@ exports.post = ({ appSdk }, req, res) => {
       cep_destino: destinationZip,
       valor_seguro: secureValue.toFixed(2),
       peso: finalWeight,
-      altura: 2,
-      largura: 11,
-      comprimento: 16
+      altura: 36,
+      largura: 70,
+      comprimento: 36,
+      ...getBestPackage(pkgCm3Vol)
     }
 
     // send onde request to Manda Bem WS per Correios service
@@ -268,6 +264,20 @@ exports.post = ({ appSdk }, req, res) => {
                 weight: {
                   value: finalWeight,
                   unit: 'kg'
+                },
+                dimensions: {
+                  width: {
+                    value: mandabemParams.largura,
+                    unit: 'cm'
+                  },
+                  height: {
+                    value: mandabemParams.altura,
+                    unit: 'cm'
+                  },
+                  length: {
+                    value: mandabemParams.comprimento,
+                    unit: 'cm'
+                  }
                 }
               },
               warehouse_code: warehouseCode,
